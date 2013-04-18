@@ -1,20 +1,20 @@
+package jp.naist.sdlab.Map;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 
-public class NonSplittableRecordReader implements RecordReader<Text, Text> {
+public class PassingRecordReader implements RecordReader<NullWritable, Text> {
 
 	private FileSplit fileSplit;
-	//private Configuration conf;
 	private boolean processed = false;
 
-	public NonSplittableRecordReader(FileSplit fileSplit, Configuration conf) {
+	public PassingRecordReader(FileSplit fileSplit, Configuration conf) {
 		this.fileSplit = fileSplit;
-		//this.conf = conf;
 	}
 	
 	@Override
@@ -23,8 +23,8 @@ public class NonSplittableRecordReader implements RecordReader<Text, Text> {
 	}
 
 	@Override
-	public Text createKey() {
-		return new Text();
+	public NullWritable createKey() {
+		return NullWritable.get();
 	}
 
 	@Override
@@ -43,13 +43,10 @@ public class NonSplittableRecordReader implements RecordReader<Text, Text> {
 	}
 
 	@Override
-	public boolean next(Text key, Text value) throws IOException {
+	public boolean next(NullWritable key, Text value) throws IOException {
 		if (!processed) {
 			Path file = fileSplit.getPath();
-			
-			key.set(file.toString());
 			value.set(file.toString());
-			
 			processed = true;
 			return true;
 		}

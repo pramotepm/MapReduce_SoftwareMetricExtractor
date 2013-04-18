@@ -1,11 +1,14 @@
+package jp.naist.sdlab.Map;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -14,8 +17,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
-public class NonSplittableFileInputFormat extends FileInputFormat<Text, Text> {
-	
+public class NonSplittableFileInputFormat extends FileInputFormat<NullWritable, Text> {
 	private Set<Path> listFiles(FileSystem fs, Path p) throws IOException {
 		Set<Path> setPath = new HashSet<Path>();
 		Path[] listPath = FileUtil.stat2Paths(fs.listStatus(p));
@@ -46,7 +48,7 @@ public class NonSplittableFileInputFormat extends FileInputFormat<Text, Text> {
 	}
 
 	@Override
-	public RecordReader<Text, Text> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
-		return new NonSplittableRecordReader((FileSplit) split, job);
+	public RecordReader<NullWritable, Text> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
+		return new PassingRecordReader((FileSplit) split, job);
 	}
 }
