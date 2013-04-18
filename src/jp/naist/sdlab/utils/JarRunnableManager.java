@@ -30,12 +30,9 @@ public class JarRunnableManager {
 		this.classpath = "";
 		try {
 			Path[] localCacheFiles = DistributedCache.getLocalCacheFiles(this.conf);
-			if (localCacheFiles.length > 0) {
-				classpath += localCacheFiles[0].toString();
-				for (int i=1; i<localCacheFiles.length; i++) {
-					System.out.println(localCacheFiles[i]);
-					classpath += ":" + localCacheFiles[i];
-				}
+			for (Path cacheFile : localCacheFiles) {
+				if (cacheFile.toString().endsWith(".jar"))
+					classpath += cacheFile.toString() + ":";
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

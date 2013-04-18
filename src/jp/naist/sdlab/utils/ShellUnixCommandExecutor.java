@@ -13,10 +13,12 @@ public class ShellUnixCommandExecutor extends Shell {
 	private String[] command;
 	private StringBuffer output;
 	private String stdinput;
+	private int exitCode;
 	
 	public ShellUnixCommandExecutor(List<String> command) {
 		// TODO Auto-generated constructor stub
 		this.command = command.toArray(new String[command.size()]);
+		this.stdinput = null;
 	}
 
 	public ShellUnixCommandExecutor(List<String> command, String stdinput) {
@@ -24,11 +26,26 @@ public class ShellUnixCommandExecutor extends Shell {
 		this.command = command.toArray(new String[command.size()]);
 		this.stdinput = stdinput;
 	}
+
+	public ShellUnixCommandExecutor(String[] command) {
+		this.command = command;
+		this.stdinput = null;
+	}
+	
+	public ShellUnixCommandExecutor(String[] command, String stdinput) {
+		this.command = command;
+		this.stdinput = stdinput;		
+	}
 	
 	public void execute() throws IOException {
 		this.run();
 	}
 	
+	@Override
+	public int getExitCode() {
+		return this.exitCode;
+	}
+
 	@Override
 	protected void run() throws IOException {
 		ProcessBuilder pb = new ProcessBuilder(this.command);
@@ -38,11 +55,13 @@ public class ShellUnixCommandExecutor extends Shell {
 		final BufferedReader errReader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 		BufferedReader inReader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		
-		// Pass input into processs's input stream
-		BufferedWriter outWriter = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream()));
-		outWriter.write(this.stdinput);
-		outWriter.flush();
-		outWriter.close();
+		if (this.stdinput != null) {
+			// Pass input into processs's input stream
+			BufferedWriter outWriter = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream()));
+			outWriter.write(this.stdinput);
+			outWriter.flush();
+			outWriter.close();
+		}
 		
 		final StringBuffer errMsg = new StringBuffer();
 	    
@@ -74,12 +93,18 @@ public class ShellUnixCommandExecutor extends Shell {
 	    	while(line != null) { 
 	    		line = inReader.readLine();
 	    	}
+	    	exitCode = proc.waitFor();
 	    	try {
 	    		errThread.join();
 	    	} catch (InterruptedException ie) { 
-	    		
+	    		throw new IOException(ie.toString());
 	    	}
-		    	completed.set(true);		      
+	    	completed.set(true);
+	    	if (exitCode != 0) {
+	    		throw new ExitCodeException(exitCode, errMsg.toString());
+	    	}
+	    } catch (InterruptedException e) {
+	    	
 	    } finally {
 	    	try {
 	    		inReader.close();

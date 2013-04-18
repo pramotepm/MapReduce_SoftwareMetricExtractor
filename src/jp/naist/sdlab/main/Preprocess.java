@@ -1,0 +1,56 @@
+package jp.naist.sdlab.main;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+public class Preprocess {
+	
+	public static String getTempInputFile(FileSystem fs, String repositoryDir) throws IOException {
+		String inputPathInFS = fs.getConf().get("mapred.input.dir");
+		Path tempInputFile =  new Path(inputPathInFS + (inputPathInFS.endsWith("/") ? "" : "/") + "index.info");
+		
+		FSDataOutputStream out = fs.create(tempInputFile);
+		int index = 0;
+		int count = 20;
+				
+		for (String path : listJavaFiles(new File(repositoryDir))) {
+			if (count-- == 0)
+				break;
+			InputStream is = new ByteArrayInputStream((index++ + "\t" + path.replaceFirst(repositoryDir + "/", "") + "\n").getBytes());
+			byte[] b = new byte[1024];
+			int numBytes = 0;
+			while ((numBytes = is.read(b)) > 0) {
+				out.write(b, 0, numBytes);
+			}
+			is.close();
+		}		
+		out.close();
+		fs.close();
+		return tempInputFile.toString();
+	}
+	
+	private static Set<String> listJavaFiles(File projectReposSubDir) throws IOException {
+		Set<String> setOfPath = new LinkedHashSet<String>();
+		File[] listFile = projectReposSubDir.listFiles();
+		for (File file : listFile) {
+			if (file.isFile()) {
+				String filename = file.toString();
+				if (file.toString().endsWith(".java")) {
+					setOfPath.add(filename);
+				}
+			}
+			else {
+				setOfPath.addAll(listJavaFiles(file));
+			}
+		}
+		return setOfPath;
+	}	
+}

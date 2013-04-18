@@ -21,8 +21,6 @@ import org.apache.hadoop.mapred.Reporter;
 
 public class MapperJavaFile extends MapReduceBase implements Mapper<NullWritable, Text, Text, Text> {
 
-	enum Counters { STAGE };
-
 	private Configuration jobconf;
 	
 	public List<List<String>> getExecuteCommand() {
@@ -37,14 +35,6 @@ public class MapperJavaFile extends MapReduceBase implements Mapper<NullWritable
 			for (String arg : jM.getArguments()[i].split(","))
 				command.add(arg);
 			commands.add(command);
-			
-			String y = "";
-			for(String x : command) {
-				y += x + " ";
-			}
-		
-			System.out.println(y);
-		
 		}
 		return commands;
 	}

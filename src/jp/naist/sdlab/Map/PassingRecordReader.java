@@ -3,12 +3,11 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 
-public class PassingRecordReader implements RecordReader<NullWritable, Text> {
+public class PassingRecordReader implements RecordReader<Text, Text> {
 
 	private FileSplit fileSplit;
 	private boolean processed = false;
@@ -23,8 +22,8 @@ public class PassingRecordReader implements RecordReader<NullWritable, Text> {
 	}
 
 	@Override
-	public NullWritable createKey() {
-		return NullWritable.get();
+	public Text createKey() {
+		return new Text();
 	}
 
 	@Override
@@ -43,7 +42,7 @@ public class PassingRecordReader implements RecordReader<NullWritable, Text> {
 	}
 
 	@Override
-	public boolean next(NullWritable key, Text value) throws IOException {
+	public boolean next(Text key, Text value) throws IOException {
 		if (!processed) {
 			Path file = fileSplit.getPath();
 			value.set(file.toString());
