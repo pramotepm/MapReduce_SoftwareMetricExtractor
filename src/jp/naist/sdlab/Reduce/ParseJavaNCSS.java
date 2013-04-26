@@ -8,7 +8,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
-public class JavaNCSS {
+public class ParseJavaNCSS {
 	private static String toCSV(String[] metrics) {
 		StringBuilder s = new StringBuilder("");
 		for (String m : metrics) {
@@ -25,6 +25,7 @@ public class JavaNCSS {
 			Document document = (Document) builder.build(new StringReader(xmlString));
 			Element rootNode = document.getRootElement();
 			
+			// wp = whole program
 			String wpInnerClass = rootNode.getChild("packages").getChild("total").getChild("classes").getText();
 			String wpFunction = rootNode.getChild("packages").getChild("total").getChild("functions").getText();
 			String wpNCSS = rootNode.getChild("packages").getChild("total").getChild("ncss").getText();

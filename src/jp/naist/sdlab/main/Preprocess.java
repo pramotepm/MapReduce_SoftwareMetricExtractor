@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -17,13 +17,18 @@ public class Preprocess {
 		String inputPathInFS = fs.getConf().get("mapred.input.dir");
 		Path tempInputFile =  new Path(inputPathInFS + (inputPathInFS.endsWith("/") ? "" : "/") + "index.info");
 		
+		if (fs.exists(tempInputFile))
+			fs.delete(tempInputFile, false);
+		
 		FSDataOutputStream out = fs.create(tempInputFile);
 		int index = 0;
-		int count = 20;
+		//int count = 20;
 				
 		for (String path : listJavaFiles(new File(repositoryDir))) {
+			/*
 			if (count-- == 0)
 				break;
+			*/
 			InputStream is = new ByteArrayInputStream((index++ + "\t" + path.replaceFirst(repositoryDir + "/", "") + "\n").getBytes());
 			byte[] b = new byte[1024];
 			int numBytes = 0;
@@ -38,7 +43,7 @@ public class Preprocess {
 	}
 	
 	private static Set<String> listJavaFiles(File projectReposSubDir) throws IOException {
-		Set<String> setOfPath = new LinkedHashSet<String>();
+		Set<String> setOfPath = new HashSet<String>();
 		File[] listFile = projectReposSubDir.listFiles();
 		for (File file : listFile) {
 			if (file.isFile()) {
