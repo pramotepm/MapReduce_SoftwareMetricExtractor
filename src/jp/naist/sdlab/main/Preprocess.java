@@ -22,13 +22,16 @@ public class Preprocess {
 		
 		FSDataOutputStream out = fs.create(tempInputFile);
 		int index = 0;
-		//int count = 20;
-				
-		for (String path : listJavaFiles(new File(repositoryDir))) {
-			/*
-			if (count-- == 0)
+		
+		int fileCount = fs.getConf().getInt("preprocess.file.size", 0);
+		boolean isFileLimit = fileCount != 0;
+		
+		Set<String> javaFiles = listJavaFiles(new File(repositoryDir));
+		for (String path : javaFiles) {
+			
+			if (isFileLimit && fileCount-- <= 0)
 				break;
-			*/
+			
 			InputStream is = new ByteArrayInputStream((index++ + "\t" + path.replaceFirst(repositoryDir + "/", "") + "\n").getBytes());
 			byte[] b = new byte[1024];
 			int numBytes = 0;
@@ -39,6 +42,7 @@ public class Preprocess {
 		}		
 		out.close();
 		fs.close();
+		System.out.println("Map Input Records = " + javaFiles.size());
 		return tempInputFile.toString();
 	}
 	

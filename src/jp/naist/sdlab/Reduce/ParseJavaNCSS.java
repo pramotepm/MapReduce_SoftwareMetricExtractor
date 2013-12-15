@@ -18,7 +18,7 @@ public class ParseJavaNCSS {
 		return s.toString();
 	}
 	
-	public static String extract(String xmlString) {
+	public static String parse(String xmlString) {
 		List<String> m = new LinkedList<String>();
 		try {
 			SAXBuilder builder = new SAXBuilder();

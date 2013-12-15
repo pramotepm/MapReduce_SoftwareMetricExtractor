@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import jp.naist.sdlab.utils.JarRunnableManager;
-import jp.naist.sdlab.utils.SeaShell;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
@@ -28,10 +27,10 @@ public class ReducerGetJavaFileMetric extends MapReduceBase implements Reducer<T
 	
 	private Configuration conf;
 	
-	public List<List<String>> getExecuteCommand() {
+	private List<String[]> getExecuteCommand() {
 		JarRunnableManager jM = new JarRunnableManager(conf);
-		List<List<String>> commands = new LinkedList<List<String>>();
-		for (int i=0; i<jM.getNoCommand(); i++) {
+		List<String[]> commands = new LinkedList<String[]>();
+		for (int i=0; i<jM.getNumberOfCommand(); i++) {
 			List<String> command = new LinkedList<String>();
 			command.add("java");
 			command.add("-classpath");
@@ -39,7 +38,7 @@ public class ReducerGetJavaFileMetric extends MapReduceBase implements Reducer<T
 			command.add(jM.getMainClass()[i]);
 			for (String arg : jM.getArguments()[i].split(","))
 				command.add(arg);
-			commands.add(command);
+			commands.add(command.toArray(new String[command.size() + 1]));
 		}
 		return commands;
 	}
@@ -53,8 +52,8 @@ public class ReducerGetJavaFileMetric extends MapReduceBase implements Reducer<T
 	public void reduce(Text key, Iterator<Text> value, OutputCollector<Text, Text> out, Reporter reporter) {
 		Text newVal = new Text();
 		String gitDir = new File(".git").getAbsolutePath();
-		List<List<String>> commands = getExecuteCommand();
-		String xmlString = null;
+		List<String[]> commands = getExecuteCommand();
+		TempFile tempFile = new TempFile();
 		
 		while (value.hasNext()) {
 			String record = value.next().toString();
@@ -73,32 +72,62 @@ public class ReducerGetJavaFileMetric extends MapReduceBase implements Reducer<T
 				e.printStackTrace();
 			}
 			if (shellRevisionFile.getExitCode() == 0) {
+				StringBuilder metricOutput = new StringBuilder("");
 				String javaSourceCodeAtRevision = shellRevisionFile.getOutput();
-				for (int i=0; i<commands.size(); i++) {
-					SeaShell.ShellCommandExecutor shellMetric = new SeaShell.ShellCommandExecutor(commands.get(i), javaSourceCodeAtRevision);
+				tempFile.write(javaSourceCodeAtRevision);
+				
+				for (int libIterator=0; libIterator<commands.size(); libIterator++) {
+					String[] libCommand = commands.get(libIterator);
+					libCommand[libCommand.length - 1] = tempFile.getPath();
+
+					ShellCommandExecutor shellMetric = new ShellCommandExecutor(libCommand);
 					try {
 						shellMetric.execute();
 					} catch (IOException e) { }
 					if (shellMetric.getExitCode() == 0) {
-						xmlString = shellMetric.getOutput();
-						newVal.set(date + "\t" + ParseJavaNCSS.extract(xmlString));
-						try {
-							out.collect(key, newVal);
-						} catch (IOException e) { }
+						String toolsOutput = shellMetric.getOutput();
+						if (toolsOutput == null || toolsOutput.equals("")) {
+							String err = "";
+							for (int i=0; i<libCommand.length; i++)
+								err += libCommand[i] + " ";
+							System.err.println(String.format("<command>%s</command>", err));
+							continue;
+						}
+						switch(libIterator) {
+							case 0: {
+								metricOutput.append(ParseJavaNCSS.parse(toolsOutput));
+							} break;
+							case 1: {
+								metricOutput.append(ParseLOC.parse(toolsOutput));
+							} break;
+							case 2: {
+								metricOutput.append(ParseJRefactory.parse(toolsOutput));
+							} break;
+						}
 						reporter.incrCounter(Counters.EXIT_0, 1);
 					}
 					else if (shellMetric.getExitCode() == 1) {
-						System.err.println("Cannot get S/W Metric @ " + SHAKey + ":" + javaFile);
+						System.err.println("Error: Library#" + libIterator + " with " + SHAKey + ":" + javaFile);
 					}
 					else {
 						System.err.println(String.format("<input>%s</input>", javaSourceCodeAtRevision));
 						System.err.println(String.format("<exitcode>%s</exitcode>", shellMetric.getExitCode()));
 						System.err.println(String.format("<output>%s</output>", shellMetric.getOutput()));						
 					}
-					reporter.incrCounter(Counters.NUMBER_OF_RECORDS, 1);
 				}
+				if (!metricOutput.toString().equals("")) {
+					try {
+						newVal.set(date + ";" + metricOutput.toString());
+						out.collect(key, newVal);
+					} catch (IOException e) { 
+						e.printStackTrace();
+					}
+				}
+				reporter.incrCounter(Counters.NUMBER_OF_RECORDS, 1);
 			}
 			else {
+				if (shellRevisionFile.getExitCode() == 128)
+					continue;
 				System.err.print("Command: ");
 				for (String c : command)
 					System.err.print(c + " ");
@@ -107,5 +136,6 @@ public class ReducerGetJavaFileMetric extends MapReduceBase implements Reducer<T
 				System.err.println(String.format("<output>%s</output>", shellRevisionFile.getOutput()));
 			}
 		}
+		tempFile.close();
 	}
 }

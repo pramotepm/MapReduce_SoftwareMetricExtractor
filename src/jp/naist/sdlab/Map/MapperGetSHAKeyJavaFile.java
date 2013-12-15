@@ -3,7 +3,6 @@ package jp.naist.sdlab.Map;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.MapReduceBase;
@@ -14,21 +13,13 @@ import org.apache.hadoop.util.Shell.ShellCommandExecutor;
 
 public class MapperGetSHAKeyJavaFile extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 	
-	public String locateGitDir(Path[] distribPaths) {
-		for (Path path : distribPaths) {
-			if (path.getName().endsWith(".git"))
-				return path.toString();
-		}
-		return null;
-	}
-
 	@Override
 	public void map(LongWritable key, Text value, OutputCollector<Text, Text> out, Reporter reporter) throws IOException {
 		String[] tmp = value.toString().split("\t");
 		String id = tmp[0];
 		String javaFile = tmp[1];
 		String gitDir = new File(".git").getAbsolutePath();
-		String[] command = new String[] { "git", "--git-dir=" + gitDir, "log", "--format=\"%H %ad\"", "--", javaFile };
+		String[] command = new String[] { "git", "--git-dir=" + gitDir, "log", "--all", "--format=\"%H %ad\"", "--", javaFile };
 		
 		ShellCommandExecutor shell = new ShellCommandExecutor(command);
 		shell.execute();

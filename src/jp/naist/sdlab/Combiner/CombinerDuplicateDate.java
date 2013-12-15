@@ -1,4 +1,4 @@
-package Combiner;
+package jp.naist.sdlab.Combiner;
 
 import java.io.IOException;
 import java.util.HashMap;

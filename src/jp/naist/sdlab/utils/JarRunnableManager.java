@@ -1,6 +1,6 @@
 package jp.naist.sdlab.utils;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -18,13 +18,14 @@ public class JarRunnableManager {
 	}
 
 	private void define() {
+		TreeMap<String, String> sorted ;
 		// getArguments
-		Collection<String> temp2 = this.conf.getValByRegex("metric.args.*").values();
-		this.args = temp2.toArray(new String[temp2.size()]);
+		sorted = new TreeMap<String, String>(this.conf.getValByRegex("metric.args.*"));
+		this.args = sorted.values().toArray(new String[sorted.values().size()]);
 		
 		// getMainClass
-		Collection<String> temp1 = this.conf.getValByRegex("metric.main.class.*").values();
-		this.mainClasses = temp1.toArray(new String[temp1.size()]);
+		sorted = new TreeMap<String, String>(this.conf.getValByRegex("metric.main.class.*"));
+		this.mainClasses = sorted.values().toArray(new String[sorted.values().size()]);
 
 		// getClassPath
 		this.classpath = "";
@@ -39,7 +40,7 @@ public class JarRunnableManager {
 		}
 	}
 	
-	public int getNoCommand() {
+	public int getNumberOfCommand() {
 		return this.mainClasses.length;
 	}
 	

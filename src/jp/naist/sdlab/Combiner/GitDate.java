@@ -1,4 +1,4 @@
-package Combiner;
+package jp.naist.sdlab.Combiner;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

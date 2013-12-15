@@ -1,5 +1,6 @@
 package jp.naist.sdlab.main;
 
+import jp.naist.sdlab.Combiner.CombinerDuplicateDate;
 import jp.naist.sdlab.Map.MapperGetSHAKeyJavaFile;
 import jp.naist.sdlab.Reduce.ReducerGetJavaFileMetric;
 
@@ -18,7 +19,6 @@ import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import Combiner.CombinerDuplicateDate;
 
 public class MetricExtractor extends Configured implements Tool {
 	
@@ -26,8 +26,6 @@ public class MetricExtractor extends Configured implements Tool {
 	public int run(String[] args) throws Exception {
 		JobConf conf = new JobConf(getConf(), MetricExtractor.class);
 		FileSystem fs = FileSystem.get(conf);
-
-		conf.setJobName("test_run");
 
 		// Output Class
 		conf.setOutputKeyClass(Text.class);
@@ -42,6 +40,9 @@ public class MetricExtractor extends Configured implements Tool {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 		
+		conf.set("mapred.textoutputformat.separator", ";");
+		
+		String inputRepository = null;
 		String inputPath = null;
 		String outputPath = null;
 		int numArgs = 1;
@@ -62,15 +63,17 @@ public class MetricExtractor extends Configured implements Tool {
 				inputPath = args[++i];
 			else if ("-output-path".equals(args[i]))
 				outputPath = args[++i];
-			//else if ("-git".equals(args[i]))
-			//	DistributedCache.addCacheFile(new URI(args[++i]), conf);
+			else if ("-input-repository".equals(args[i]))
+				inputRepository = args[++i];
+			else if ("-n".equals(args[i]))
+				conf.set("preprocess.file.size", args[++i]);
 		}
 		
 		// Input - Output Path
 		FileInputFormat.setInputPaths(conf, new Path(inputPath));
 		FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
-		Preprocess.getTempInputFile(fs, "/home/hadoop/repository/BIRT_R4.2.2");
+		Preprocess.getTempInputFile(fs, inputRepository);
 		
 		JobClient.runJob(conf);		
 		return 0;

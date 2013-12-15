@@ -2,12 +2,14 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="/Users/pramote/Desktop/Hadoop/hadoop-ant-1.1.2.jar"/>
-	<classpathentry kind="lib" path="/Users/pramote/Desktop/Hadoop/hadoop-client-1.1.2.jar"/>
-	<classpathentry kind="lib" path="/Users/pramote/Desktop/Hadoop/hadoop-core-1.1.2.jar"/>
-	<classpathentry kind="lib" path="/Users/pramote/Desktop/Hadoop/hadoop-minicluster-1.1.2.jar"/>
-	<classpathentry kind="lib" path="/Users/pramote/Desktop/Hadoop/hadoop-tools-1.1.2.jar"/>
-	<classpathentry kind="lib" path="/Users/pramote/Desktop/Hadoop/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/Java/jdom-2.0.4/jdom-2.0.4.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/hadoop-ant-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/hadoop-client-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/hadoop-core-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/hadoop-examples-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/hadoop-minicluster-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/hadoop-test-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/hadoop-tools-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/Users/pramote/Desktop/libs/hadoop/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
